@@ -19,6 +19,7 @@ class Main:
                 print('Package already installed!')
                 exit()
             else:
+                print(f'Collecting {self.argv[2]}...')
                 print('Creating package directory...')
                 os.mkdir(self.argv[2])
                 os.chdir(self.argv[2])
@@ -28,6 +29,16 @@ class Main:
                 with open('.opmpack', 'w') as file:
                     file.write(f'{self.argv[2]}\n{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n{requirements.text.replace('\n', ', ')}')
                     file.close()
+                if requirements.text == '':
+                    print("No requirements found!")
+                else:
+                    list_requirements = []
+                    for i in requirements.text.split('\n'):
+                        list_requirements.append(i)
+                    list_requirements.pop(-1)
+                    print(list_requirements)
+                    self.install_requirements(list_requirements)
+
                 print(f'Successfully installed {self.argv[2]}')
 
         if self.argv[1] == 'uninstall':
@@ -40,7 +51,7 @@ class Main:
                 print('Not an OrbitPM Package!')
 
         if self.argv[1] == 'info':
-            os.path.dirname(os.path.realpath(__file__))
+            os.chdir(os.path.dirname(os.path.realpath(__file__)))
             os.chdir(self.argv[2])
             contents = os.listdir()
             lines = []
@@ -52,6 +63,22 @@ class Main:
                 print(f'Requirements: {lines[2]}')
             else:
                 print('Not an OrbitPM Package!')
+
+    def install_requirements(self, requirements: list):
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
+        for i in requirements:
+            if i in os.listdir():
+                print('Package already installed!')
+            else:
+                response = requests.get(f'https://raw.githubusercontent.com/G1aD05/OrbitPM/refs/heads/main/pkg/{i}/main.py')
+                print(i)
+                os.mkdir(i)
+                os.chdir(i)
+                with open('main.py', 'wb') as file:
+                    file.write(response.content)
+                with open('.opmpack', 'w') as file:
+                    file.write(f'{i}\n{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\nNULL')
+                    file.close()
 
 
 if __name__ == '__main__':
